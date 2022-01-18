@@ -1,24 +1,65 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import {
+  useGetAllPokemonsQuery,
+  useGetPokemonByNameQuery,
+} from "./services/pokemon";
+import { useState } from "react";
 
 function App() {
+  const [queryPokemon, setQueryPokemon] = useState(null);
+  const { data, isLoading } = useGetAllPokemonsQuery();
+  const { currentData } = useGetPokemonByNameQuery(queryPokemon, {
+    skip: !queryPokemon,
+  });
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <>
+      <header>
+        <h1>Choose your favorite Pokemon and check their attributes</h1>
+        <p>This app use RTK query</p>
       </header>
-    </div>
+      {data && (
+        <div className="App">
+          {data.results.map((result, i) => (
+            <div
+              key={i}
+              className="pokemonCard"
+              data-isSelected={queryPokemon === result.name}
+              onClick={() => {
+                setQueryPokemon(result.name);
+              }}
+            >
+              <h2>
+                {result.name.substring(1, -1).toUpperCase() +
+                  result.name.substring(1)}
+              </h2>
+            </div>
+          ))}
+        </div>
+      )}
+      {queryPokemon && currentData && (
+        <div className="box">
+          <div>
+            <h2>
+              {currentData.name.substring(1, -1).toUpperCase() +
+                currentData.name.substring(1)}
+            </h2>
+            {currentData.weight && <p>Waga: {currentData.weight}</p>}
+            {currentData.height && <p>Wzrost: {currentData.height}</p>}
+          </div>
+          {currentData.sprites.front_default && (
+            <img
+              className="image"
+              src={currentData.sprites.front_default}
+              alt=""
+            />
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
